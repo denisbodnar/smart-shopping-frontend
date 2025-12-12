@@ -20,24 +20,16 @@ const message = ref('');
 
 onMounted(async () => {
   const token = typeof route.query.token === 'string' ? route.query.token : undefined;
-  const code = typeof route.query.code === 'string' ? route.query.code : undefined;
-  const state = typeof route.query.state === 'string' ? route.query.state : undefined;
 
   try {
-    if (token) {
-      shoppingStore.setToken(token);
-      await shoppingStore.fetchCurrentUser();
-      await router.replace('/hello');
-      return;
-    }
-
-    if (!code) {
-      message.value = 'Missing authorization code.';
+    if (!token) {
+      message.value = 'Missing token.';
       await router.replace('/sign-in');
       return;
     }
 
-    await shoppingStore.googleOAuthCallback({ code, state });
+    shoppingStore.setToken(token);
+    await shoppingStore.fetchCurrentUser();
     await router.replace('/hello');
   } catch (e) {
     message.value = 'Google sign-in failed.';
