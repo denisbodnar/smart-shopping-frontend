@@ -1,19 +1,7 @@
-<script setup>
-import Login from './components/Login.vue'
-</script>
+<script setup></script>
 
 <template>
-  <main>
-    <Login />
-  </main>
+  <RouterView />
 </template>
 
-<style scoped>
-main {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f4f4f5;
-}
-</style>
+<style scoped></style>
