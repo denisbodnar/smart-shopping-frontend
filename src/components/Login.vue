@@ -81,6 +81,10 @@
         Продовжити
       </button>
 
+      <button type="button" class="google-login-button" @click="onGoogleLogin">
+        Увійти з Google
+      </button>
+
       <p class="login-link">
         Немає облікового запису?
         <router-link to="/sign-up" class="login-link-text"
@@ -94,6 +98,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { toast } from "vue3-toastify";
+import { useShoppingStore } from "../store/shoppingStore";
 
 const email = ref("");
 const password = ref("");
@@ -115,6 +120,17 @@ const onSubmit = () => {
   }
 
   toast.success("Вхід успішний!");
+};
+
+const shoppingStore = useShoppingStore();
+
+const onGoogleLogin = () => {
+  try {
+    const url = shoppingStore.googleOAuthUrl();
+    window.location.href = url;
+  } catch (e) {
+    toast.error("Не вдалося розпочати вхід через Google");
+  }
 };
 </script>
 
@@ -257,6 +273,23 @@ const onSubmit = () => {
   cursor: not-allowed;
 }
 
+.google-login-button {
+  padding: 1.25rem 1.5rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.google-login-button:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
 .login-link {
   margin-top: 1rem;
   text-align: center;
@@ -294,6 +327,11 @@ const onSubmit = () => {
     padding: 1rem 1.25rem;
     font-size: 0.95rem;
   }
+
+  .google-login-button {
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -317,6 +355,11 @@ const onSubmit = () => {
   }
 
   .login-button {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .google-login-button {
     padding: 0.875rem 1rem;
     font-size: 0.875rem;
   }
