@@ -8,6 +8,7 @@ export const useShoppingStore = defineStore('shopping', () => {
     brands: false,
     categories: false,
     colors: false,
+    searches: false,
     sizes: false,
     targetAudiences: false,
     user: false,
@@ -18,6 +19,7 @@ export const useShoppingStore = defineStore('shopping', () => {
     brands: null,
     categories: null,
     colors: null,
+    searches: null,
     sizes: null,
     targetAudiences: null,
     user: null,
@@ -29,6 +31,7 @@ export const useShoppingStore = defineStore('shopping', () => {
   const brands = ref([]);
   const categories = ref([]);
   const colors = ref([]);
+  const searchResults = ref([]);
   const sizes = ref([]);
   const targetAudiences = ref([]);
 
@@ -161,6 +164,21 @@ export const useShoppingStore = defineStore('shopping', () => {
     }
   }
 
+  async function createSearch(payload) {
+    setLoading('searches', true);
+    setError('searches', null);
+    try {
+      const { data } = await api.searches.create(payload);
+      searchResults.value = Array.isArray(data) ? data : [];
+      return searchResults.value;
+    } catch (err) {
+      setError('searches', extractErrorMessage(err));
+      throw err;
+    } finally {
+      setLoading('searches', false);
+    }
+  }
+
   async function fetchSizes() {
     setLoading('sizes', true);
     setError('sizes', null);
@@ -234,6 +252,7 @@ export const useShoppingStore = defineStore('shopping', () => {
     brands,
     categories,
     colors,
+    searchResults,
     sizes,
     targetAudiences,
     setToken,
@@ -244,6 +263,7 @@ export const useShoppingStore = defineStore('shopping', () => {
     fetchBrands,
     fetchCategories,
     fetchColors,
+    createSearch,
     fetchSizes,
     fetchTargetAudiences,
     fetchCurrentUser,

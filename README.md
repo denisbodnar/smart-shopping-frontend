@@ -1,6 +1,8 @@
 # Smart-Shopping frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Vue 3 + Vite SPA for SmartShopping.
+
+The app talks to the SmartShopping API via Axios and supports Google OAuth login.
 
 ## Recommended IDE Setup
 
@@ -25,6 +27,19 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+## Environment variables
+
+Vite env vars are **build-time**. For local development create a `.env` file in the project root:
+
+```sh
+VITE_API_BASE_URL='your-api-base-url'
+```
+
+Notes:
+
+- `.env` is gitignored.
+- If you change env vars, restart `npm run dev`.
+
 ### Compile and Hot-Reload for Development
 
 ```sh
@@ -36,3 +51,45 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## Routes
+
+- `/sign-in` - Login page
+- `/sign-up` - Register page
+- `/oauth/callback` - Google OAuth callback handler (expects `?token=...`)
+- `/hello` - Displays the current user profile
+
+## Google OAuth flow (frontend)
+
+1. User clicks "Login with Google" on `/sign-in`.
+2. Browser redirects to the backend OAuth endpoint:
+   - `GET {VITE_API_BASE_URL}/auth/google_oauth2`
+3. Backend redirects back to the frontend:
+   - `/oauth/callback?token=...`
+4. `OAuthCallback.vue` stores the token in `localStorage` and calls `GET /api/v1/user` to load the profile.
+5. App redirects to `/hello`.
+
+## Netlify deployment
+
+### Build settings
+
+- **Build command**
+  - `npm ci && npm run build`
+- **Publish directory**
+  - `dist`
+
+### SPA routing
+
+This repo includes `public/_redirects` so Netlify serves `index.html` for SPA routes:
+
+```
+/*    /index.html   200
+```
+
+### Netlify env var
+
+In Netlify site settings add:
+
+- `VITE_API_BASE_URL='your-api-base-url'`
+
+Then redeploy (env vars are applied at build time).

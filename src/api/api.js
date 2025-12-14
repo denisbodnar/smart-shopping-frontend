@@ -25,6 +25,10 @@ const colors = {
   list: () => axiosClient.get('/api/v1/colors'),
 };
 
+const searches = {
+  create: (payload) => axiosClient.post('/api/v1/searches', payload),
+};
+
 const sizes = {
   list: () => axiosClient.get('/api/v1/sizes'),
 };
@@ -43,6 +47,7 @@ export const api = {
   brands,
   categories,
   colors,
+  searches,
   sizes,
   targetAudiences,
   user,
