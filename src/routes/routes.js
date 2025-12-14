@@ -3,6 +3,7 @@ import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
 import Hello from "../components/Hello.vue";
 import OAuthCallback from "../components/OAuthCallback.vue";
+import NewUserWizard from "@/components/NewUserWizard.vue";
 
 const routes = [
   {
@@ -28,6 +29,11 @@ const routes = [
     path: "/oauth/callback",
     name: "OAuthCallback",
     component: OAuthCallback,
+  },
+  {
+    path: "/new-user-wizard",
+    name: "NewUserWizard",
+    component: NewUserWizard,
   },
 ];
 

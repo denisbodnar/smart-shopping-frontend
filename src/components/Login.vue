@@ -1,8 +1,10 @@
 <template>
   <div class="login-container">
-    <h1 class="login-title">Вхід</h1>
+    <p class="hello-text">
+      Смарт-шопінг. Твій персональний асистент
+    </p>
     <form class="login-form" @submit.prevent="onSubmit">
-      <label class="login-label">
+      <!-- <label class="login-label">
         <span>Email</span>
         <input
           v-model="email"
@@ -79,18 +81,18 @@
 
       <button type="submit" class="login-button" :disabled="!isFormValid">
         Продовжити
-      </button>
+      </button> -->
 
       <button type="button" class="google-login-button" @click="onGoogleLogin">
         Увійти з Google
       </button>
 
-      <p class="login-link">
+      <!-- <p class="login-link">
         Немає облікового запису?
         <router-link to="/sign-up" class="login-link-text"
           >Зареєструватися</router-link
         >
-      </p>
+      </p> -->
     </form>
   </div>
 </template>
@@ -133,235 +135,3 @@ const onGoogleLogin = () => {
   }
 };
 </script>
-
-<style scoped>
-.login-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  background: #2b2d31;
-  z-index: 1000;
-  color: #ffffff;
-}
-
-.login-title {
-  margin: 0 0 3rem;
-  font-size: 1.75rem;
-  text-align: center;
-  color: #ffffff;
-  font-weight: 400;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-  max-width: 600px;
-  padding: 0 1rem;
-}
-
-.login-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  gap: 0.4rem;
-  color: #ffffff;
-}
-
-.login-label span {
-  position: absolute;
-  visibility: hidden;
-  height: 0;
-}
-
-.password-input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.3s ease;
-  opacity: 0.6;
-  z-index: 10;
-}
-
-.password-toggle:hover {
-  opacity: 1;
-}
-
-.password-icon {
-  width: 20px;
-  height: 20px;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) rotate(-10deg);
-  }
-  50% {
-    transform: scale(1.1) rotate(5deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-.login-input {
-  padding: 1.25rem 3.5rem 1.25rem 1.5rem;
-  border-radius: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.4);
-  background: transparent;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.login-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.login-input:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
-  color: #ffffff;
-}
-
-.login-button {
-  margin-top: 0.75rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 2rem;
-  border: none;
-  background: #ffffff;
-  color: #000000;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.login-button:hover:not(:disabled) {
-  background: #f0f0f0;
-  transform: translateY(-1px);
-}
-
-.login-button:disabled {
-  background: rgba(255, 255, 255, 0.3);
-  color: rgba(0, 0, 0, 0.4);
-  cursor: not-allowed;
-}
-
-.google-login-button {
-  padding: 1.25rem 1.5rem;
-  border-radius: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: transparent;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.google-login-button:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
-}
-
-.login-link {
-  margin-top: 1rem;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.95rem;
-}
-
-.login-link-text {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .login-container {
-    padding: 1rem;
-  }
-
-  .login-title {
-    font-size: 1.5rem;
-    margin: 0 0 2rem;
-  }
-
-  .login-form {
-    gap: 1rem;
-    max-width: 500px;
-  }
-
-  .login-input {
-    padding: 1rem 1.25rem;
-    font-size: 0.95rem;
-  }
-
-  .login-button {
-    padding: 1rem 1.25rem;
-    font-size: 0.95rem;
-  }
-
-  .google-login-button {
-    padding: 1rem 1.25rem;
-    font-size: 0.95rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-container {
-    padding: 0.75rem;
-  }
-
-  .login-title {
-    font-size: 1.25rem;
-    margin: 0 0 1.5rem;
-  }
-
-  .login-form {
-    gap: 0.875rem;
-    padding: 0 0.5rem;
-  }
-
-  .login-input {
-    padding: 0.875rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  .login-button {
-    padding: 0.875rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  .google-login-button {
-    padding: 0.875rem 1rem;
-    font-size: 0.875rem;
-  }
-}
-</style>
