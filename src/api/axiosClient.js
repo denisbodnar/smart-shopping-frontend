@@ -5,7 +5,7 @@ import axios from 'axios';
 // - timeout: adjust as needed
 // - withCredentials: set to true if your backend uses cookies
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173',
   timeout: 15000,
   withCredentials: false,
 });
@@ -33,6 +33,9 @@ axiosClient.interceptors.request.use(
       // 2) Custom header like X-Google-Token if your backend expects it
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+      // config.headers.Authorization = `Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNiwiZXhwIjoxNzY1OTk0MDcyfQ.PYp0uYJw-29S_cmLIGP4z2Sk3QoXdMy7lBQywFsuWrM`;
+
+
     }
 
     return config;

@@ -16,7 +16,11 @@
         required
       >
         <option value="" disabled>Оберіть аудиторію</option>
-        <option v-for="ta in targetAudiences" :key="ta.id" :value="String(ta.id)">
+        <option
+          v-for="ta in targetAudiences"
+          :key="ta.id"
+          :value="String(ta.id)"
+        >
           {{ ta.name }}
         </option>
       </select>
@@ -110,7 +114,7 @@
         class="login-button"
         :disabled="isLoading || !canProceed"
       >
-        {{ step < 6 ? 'Далі' : 'Готово' }}
+        {{ step < 6 ? "Далі" : "Готово" }}
       </button>
 
       <p v-if="errorMessage" class="login-link">{{ errorMessage }}</p>
@@ -119,21 +123,23 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { useShoppingStore } from '../store/shoppingStore';
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useShoppingStore } from "../store/shoppingStore";
 
-const emit = defineEmits(['complete']);
+const emit = defineEmits(["complete"]);
 
+const router = useRouter();
 const shoppingStore = useShoppingStore();
 
 const step = ref(1);
-const targetAudienceId = ref('');
-const categoryId = ref('');
+const targetAudienceId = ref("");
+const categoryId = ref("");
 const sizeIds = ref([]);
 const brandIds = ref([]);
 const colorIds = ref([]);
-const priceMin = ref('');
-const priceMax = ref('');
+const priceMin = ref("");
+const priceMax = ref("");
 
 const targetAudiences = computed(() => shoppingStore.targetAudiences);
 const brands = computed(() => shoppingStore.brands);
@@ -167,14 +173,23 @@ const errorMessage = computed(() => {
 const canProceed = computed(() => {
   if (step.value === 1) return !!targetAudienceId.value;
   if (step.value === 2) return !!categoryId.value;
-  if (step.value === 3) return Array.isArray(sizeIds.value) && sizeIds.value.length > 0;
-  if (step.value === 4) return Array.isArray(brandIds.value) && brandIds.value.length > 0;
-  if (step.value === 5) return Array.isArray(colorIds.value) && colorIds.value.length > 0;
+  if (step.value === 3)
+    return Array.isArray(sizeIds.value) && sizeIds.value.length > 0;
+  if (step.value === 4)
+    return Array.isArray(brandIds.value) && brandIds.value.length > 0;
+  if (step.value === 5)
+    return Array.isArray(colorIds.value) && colorIds.value.length > 0;
 
-  if (priceMin.value === '' || priceMax.value === '') return false;
+  if (priceMin.value === "" || priceMax.value === "") return false;
   const min = Number(priceMin.value);
   const max = Number(priceMax.value);
-  return Number.isFinite(min) && Number.isFinite(max) && min >= 0 && max >= 0 && min <= max;
+  return (
+    Number.isFinite(min) &&
+    Number.isFinite(max) &&
+    min >= 0 &&
+    max >= 0 &&
+    min <= max
+  );
 });
 
 onMounted(async () => {
@@ -201,19 +216,34 @@ const onBack = () => {
   }
 };
 
-const onNext = () => {
+const onNext = async () => {
   if (step.value < 6) {
     step.value += 1;
     return;
   }
 
-  shoppingStore.createSearch({
-    target_audience_ids: [Number(targetAudienceId.value)],
-    category_ids: [Number(categoryId.value)],
-    size_ids: sizeIds.value.map((id) => Number(id)),
-    brand_ids: brandIds.value.map((id) => Number(id)),
-    color_ids: colorIds.value.map((id) => Number(id)),
-    price_range: [Number(priceMin.value), Number(priceMax.value)],
-  });
+  try {
+    const response = await shoppingStore.createSearch({
+      target_audience_ids: [Number(targetAudienceId.value)],
+      category_ids: [Number(categoryId.value)],
+      size_ids: sizeIds.value.map((id) => Number(id)),
+      brand_ids: brandIds.value.map((id) => Number(id)),
+      color_ids: colorIds.value.map((id) => Number(id)),
+      price_min: Number(priceMin.value),
+      price_max: Number(priceMax.value),
+    });
+
+    console.log("Search response:", response);
+
+    // Check if search_id exists in response and redirect
+    if (response?.search_id || shoppingStore.searchId) {
+      console.log("Redirecting to shoes catalog...");
+      router.push("/shoes");
+    } else {
+      console.log("No search_id found in response");
+    }
+  } catch (error) {
+    console.error("Failed to create search:", error);
+  }
 };
 </script>

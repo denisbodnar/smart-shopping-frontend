@@ -4,6 +4,7 @@ import Register from "../components/Register.vue";
 import Hello from "../components/Hello.vue";
 import OAuthCallback from "../components/OAuthCallback.vue";
 import NewUserWizard from "@/components/NewUserWizard.vue";
+import ShoesCatalog from "@/components/ShoesCatalog.vue";
 
 const routes = [
   {
@@ -34,6 +35,11 @@ const routes = [
     path: "/new-user-wizard",
     name: "NewUserWizard",
     component: NewUserWizard,
+  },
+  {
+    path: "/shoes",
+    name: "Shoes",
+    component: ShoesCatalog,
   },
 ];
 
