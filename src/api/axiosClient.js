@@ -33,7 +33,7 @@ axiosClient.interceptors.request.use(
       // 2) Custom header like X-Google-Token if your backend expects it
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
-      // config.headers.Authorization = `Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNiwiZXhwIjoxNzY1OTk0MDcyfQ.PYp0uYJw-29S_cmLIGP4z2Sk3QoXdMy7lBQywFsuWrM`;
+      // config.headers.Authorization = `Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNiwiZXhwIjoxNzY2MzE2NDQ2fQ.-DVahRnFnd8TXkigvKtmM6AMoBrWJ1_lUrPlvrCbh_w`;
 
 
     }

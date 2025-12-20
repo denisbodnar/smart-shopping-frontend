@@ -81,10 +81,6 @@
         </h3>
         <div v-if="searchId" class="search-info">
           <div class="search-item">
-            <span class="label">ID пошуку:</span>
-            <span class="value">{{ searchId }}</span>
-          </div>
-          <div class="search-item">
             <span class="label">Знайдено:</span>
             <span class="value">{{ shoes.length }} позицій</span>
           </div>
@@ -97,17 +93,21 @@
         <h3 class="section-title">
           <span class="icon">❤️</span>
           Улюблені
-          <span class="count">({{ likedShoes.length }})</span>
         </h3>
 
-        <div v-if="loading.likedShoes" class="loading-text">
-          Завантаження...
+        <div v-if="loading.likedShoes" class="loading-container">
+          <div class="spinner-small"></div>
         </div>
         <div v-else-if="error.likedShoes" class="error-text">
           {{ error.likedShoes }}
         </div>
         <div v-else-if="likedShoes.length > 0" class="favorites-list">
-          <div v-for="shoe in likedShoes" :key="shoe.id" class="favorite-item">
+          <div
+            v-for="shoe in displayedFavorites"
+            :key="shoe.id"
+            class="favorite-item"
+            @click="goToShopPage(shoe.product_url)"
+          >
             <div class="favorite-image">
               <img :src="getShoeImage(shoe)" :alt="shoe.name" />
             </div>
@@ -116,6 +116,13 @@
               <p class="favorite-price">{{ shoe.price }} грн</p>
             </div>
           </div>
+          <button
+            v-if="likedShoes.length > 3"
+            @click="goToFavorites"
+            class="view-all-btn"
+          >
+            Показати всі ({{ likedShoes.length }})
+          </button>
         </div>
         <div v-else class="empty-text">
           <p>Ще немає улюблених</p>
@@ -206,8 +213,10 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useShoppingStore } from "../store/shoppingStore";
+import { useRouter } from "vue-router";
 
 const shoppingStore = useShoppingStore();
+const router = useRouter();
 const isMobileHidden = ref(true); // Hidden by default on mobile
 
 const currentUser = computed(() => shoppingStore.currentUser);
@@ -217,8 +226,23 @@ const likedShoes = computed(() => shoppingStore.likedShoes);
 const loading = computed(() => shoppingStore.loading);
 const error = computed(() => shoppingStore.error);
 
+// Show only first 3 favorite shoes in sidebar
+const displayedFavorites = computed(() => {
+  return likedShoes.value.slice(0, 3);
+});
+
 const toggleMobileSidebar = () => {
   isMobileHidden.value = !isMobileHidden.value;
+};
+
+const goToFavorites = () => {
+  router.push("/favorites");
+};
+
+const goToShopPage = (shoeUrl) => {
+  if (shoeUrl) {
+    window.open(shoeUrl, "_blank");
+  }
 };
 
 onMounted(async () => {
@@ -597,7 +621,59 @@ const handleUpdateUser = async () => {
   background-clip: text;
 }
 
+.view-all-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  border: none;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.view-all-btn:hover {
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
+
+.view-all-btn:active {
+  transform: translateY(0);
+}
+
 /* State Messages */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.spinner-small {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .loading-text,
 .error-text,
 .empty-text {

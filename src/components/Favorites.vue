@@ -1,8 +1,7 @@
 <template>
   <div class="page-wrapper">
     <div class="trainers-container">
-      <h1 class="trainers-title">Пошук кросівок</h1>
-
+      <h1 class="trainers-title">Улюблені кросівки</h1>
 
       <!-- Loading state -->
       <div v-if="isLoading" class="loading-state">
@@ -17,10 +16,10 @@
         </button>
       </div>
 
-      <!-- Shoes grid -->
-      <div v-else-if="shoes.length > 0" class="trainers-grid">
+      <!-- Favorites grid -->
+      <div v-else-if="likedShoes.length > 0" class="trainers-grid">
         <div
-          v-for="shoe in shoes"
+          v-for="shoe in likedShoes"
           :key="shoe.id"
           class="trainer-card"
           :class="{ 'card-loading': loadingShoeId === shoe.id }"
@@ -33,11 +32,10 @@
           <button
             @click="toggleFavorite(shoe.id)"
             class="favorite-btn"
-            :class="{ favorited: isFavorited(shoe.id) }"
+            :class="{ favorited: true }"
             :disabled="loadingShoeId === shoe.id"
           >
             <svg
-              v-if="isFavorited(shoe.id)"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -54,25 +52,6 @@
                 <path
                   d="M2 9.1371C2 14 6.01943 16.5914 8.96173 18.9109C10 19.7294 11 20.5 12 20.5C13 20.5 14 19.7294 15.0383 18.9109C17.9806 16.5914 22 14 22 9.1371C22 4.27416 16.4998 0.825464 12 5.50063C7.50016 0.825464 2 4.27416 2 9.1371Z"
                   fill="#7c3aed"
-                ></path>
-              </g>
-            </svg>
-            <svg
-              v-else
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                <path
-                  d="M8.96173 18.9109L9.42605 18.3219L8.96173 18.9109ZM12 5.50063L11.4596 6.02073C11.601 6.16763 11.7961 6.25063 12 6.25063C12.2039 6.25063 12.399 6.16763 12.5404 6.02073L12 5.50063ZM15.0383 18.9109L15.5026 19.4999L15.0383 18.9109ZM9.42605 18.3219C7.91039 17.1271 6.25307 15.9603 4.93829 14.4798C3.64922 13.0282 2.75 11.3345 2.75 9.1371H1.25C1.25 11.8026 2.3605 13.8361 3.81672 15.4758C5.24723 17.0866 7.07077 18.3752 8.49742 19.4999L9.42605 18.3219ZM2.75 9.1371C2.75 6.98623 3.96537 5.18252 5.62436 4.42419C7.23607 3.68748 9.40166 3.88258 11.4596 6.02073L12.5404 4.98053C10.0985 2.44352 7.26409 2.02539 5.00076 3.05996C2.78471 4.07292 1.25 6.42503 1.25 9.1371H2.75ZM8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.6599C10.6739 20.9854 11.3096 21.25 12 21.25V19.75C11.6904 19.75 11.3261 19.6293 10.8736 19.3648C10.4213 19.1005 9.95208 18.7366 9.42605 18.3219L8.49742 19.4999ZM15.5026 19.4999C16.9292 18.3752 18.7528 17.0866 20.1833 15.4758C21.6395 13.8361 22.75 11.8026 22.75 9.1371H21.25C21.25 11.3345 20.3508 13.0282 19.0617 14.4798C17.7469 15.9603 16.0896 17.1271 14.574 18.3219L15.5026 19.4999ZM22.75 9.1371C22.75 6.42503 21.2153 4.07292 18.9992 3.05996C16.7359 2.02539 13.9015 2.44352 11.4596 4.98053L12.5404 6.02073C14.5983 3.88258 16.7639 3.68748 18.3756 4.42419C20.0346 5.18252 21.25 6.98623 21.25 9.1371H22.75ZM14.574 18.3219C14.0479 18.7366 13.5787 19.1005 13.1264 19.3648C12.6739 19.6293 12.3096 19.75 12 19.75V21.25C12.6904 21.25 13.3261 20.9854 13.8832 20.6599C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999L14.574 18.3219Z"
-                  fill="#ffffff"
                 ></path>
               </g>
             </svg>
@@ -142,7 +121,12 @@
 
       <!-- Empty state -->
       <div v-else class="empty-state">
-        <p>Результати не знайдено</p>
+        <div class="empty-icon">❤️</div>
+        <p class="empty-title">Немає улюблених кросівок</p>
+        <p class="empty-text">
+          Додайте кросівки до улюблених, щоб побачити їх тут
+        </p>
+        <button @click="goToSearch" class="search-button">Почати пошук</button>
       </div>
 
       <button @click="goBack" class="back-button">Повернутись</button>
@@ -155,126 +139,108 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
 import { useShoppingStore } from "../store/shoppingStore";
+import { useRouter } from "vue-router";
 import Sidebar from "./Sidebar.vue";
 
-const router = useRouter();
 const shoppingStore = useShoppingStore();
+const router = useRouter();
 
-const searchId = computed(() => shoppingStore.searchId);
-const shoes = computed(() => shoppingStore.shoes);
-const isLoading = computed(() => shoppingStore.loading.shoes);
-const errorMessage = computed(() => shoppingStore.error.shoes);
 const likedShoes = computed(() => shoppingStore.likedShoes);
+const isLoading = computed(() => shoppingStore.loading.likedShoes);
+const errorMessage = computed(() => shoppingStore.error.likedShoes);
 
-// Track current image index for each shoe
+// Track current image index for each shoe's carousel
 const currentImageIndex = reactive({});
 
-// Track which shoe is currently being liked/unliked
+// Track which shoe is currently being unliked
 const loadingShoeId = ref(null);
 
 onMounted(async () => {
-  console.log("ShoesCatalog mounted, searchId:", searchId.value);
-  if (searchId.value) {
-    try {
-      await shoppingStore.fetchShoes(searchId.value);
-      console.log("Shoes fetched successfully:", shoppingStore.shoes);
-
-      // Initialize image indices for all shoes
-      shoppingStore.shoes.forEach((shoe) => {
-        currentImageIndex[shoe.id] = 0;
-      });
-    } catch (error) {
-      console.error("Failed to fetch shoes:", error);
-    }
-  } else {
-    console.warn("No search_id found, redirecting to wizard");
-    router.push("/new-user-wizard");
-  }
+  await retryFetch();
 });
 
 const retryFetch = async () => {
-  if (searchId.value) {
-    await shoppingStore.fetchShoes(searchId.value);
+  try {
+    await shoppingStore.fetchLikedShoes();
+  } catch (err) {
+    console.error("Failed to fetch liked shoes:", err);
   }
 };
 
+const goBack = () => {
+  router.back();
+};
+
+const goToSearch = () => {
+  router.push("/");
+};
+
+// Carousel functions
 const hasMultipleImages = (shoe) => {
   return shoe.images && Array.isArray(shoe.images) && shoe.images.length > 1;
 };
 
 const getCurrentImage = (shoe) => {
-  if (shoe.images && Array.isArray(shoe.images) && shoe.images.length > 0) {
-    const index = currentImageIndex[shoe.id] || 0;
-    return shoe.images[index];
+  if (!shoe.images || !Array.isArray(shoe.images) || shoe.images.length === 0) {
+    return "https://via.placeholder.com/300x300/cccccc/ffffff?text=No+Image";
   }
-  return "https://via.placeholder.com/300x280/cccccc/ffffff?text=No+Image";
+  const index = currentImageIndex[shoe.id] || 0;
+  return shoe.images[index] || shoe.images[0];
 };
 
 const getVisibleDots = (shoe) => {
-  if (!shoe.images || shoe.images.length <= 5) {
-    return shoe.images.map((img, index) => ({ img, index }));
-  }
+  if (!shoe.images || shoe.images.length === 0) return [];
 
-  const currentIndex = currentImageIndex[shoe.id] || 0;
+  const maxDots = 5;
   const totalImages = shoe.images.length;
-  const maxVisibleDots = 5;
 
-  // Calculate the range of visible dots
-  let startIndex = Math.max(0, currentIndex - 2);
-  let endIndex = Math.min(totalImages, startIndex + maxVisibleDots);
-
-  // Adjust start if we're near the end
-  if (endIndex - startIndex < maxVisibleDots) {
-    startIndex = Math.max(0, endIndex - maxVisibleDots);
+  if (totalImages <= maxDots) {
+    return shoe.images.map((img, idx) => ({ img, index: idx }));
   }
 
-  return shoe.images.slice(startIndex, endIndex).map((img, idx) => ({
-    img,
-    index: startIndex + idx,
-  }));
-};
+  const currentIdx = currentImageIndex[shoe.id] || 0;
+  let startIndex = Math.max(0, currentIdx - Math.floor(maxDots / 2));
 
-const setImageIndex = (shoeId, index) => {
-  const shoe = shoppingStore.shoes.find((s) => s.id === shoeId);
-  if (shoe && shoe.images && index >= 0 && index < shoe.images.length) {
-    currentImageIndex[shoeId] = index;
+  if (startIndex + maxDots > totalImages) {
+    startIndex = totalImages - maxDots;
   }
+
+  return shoe.images
+    .slice(startIndex, startIndex + maxDots)
+    .map((img, idx) => ({ img, index: startIndex + idx }));
 };
 
 const nextImage = (shoeId) => {
-  const shoe = shoppingStore.shoes.find((s) => s.id === shoeId);
-  if (shoe && shoe.images) {
-    const maxIndex = shoe.images.length - 1;
-    if (currentImageIndex[shoeId] < maxIndex) {
-      currentImageIndex[shoeId]++;
-    }
+  const shoe = likedShoes.value.find((s) => s.id === shoeId);
+  if (!shoe) return;
+
+  const currentIdx = currentImageIndex[shoeId] || 0;
+  if (currentIdx < shoe.images.length - 1) {
+    currentImageIndex[shoeId] = currentIdx + 1;
   }
 };
 
 const previousImage = (shoeId) => {
-  if (currentImageIndex[shoeId] > 0) {
-    currentImageIndex[shoeId]--;
+  const currentIdx = currentImageIndex[shoeId] || 0;
+  if (currentIdx > 0) {
+    currentImageIndex[shoeId] = currentIdx - 1;
   }
 };
 
-const isFavorited = (shoeId) => {
-  return likedShoes.value.some((shoe) => shoe.id === shoeId);
+const setImageIndex = (shoeId, index) => {
+  currentImageIndex[shoeId] = index;
 };
 
+// Favorite functions
 const toggleFavorite = async (shoeId) => {
   if (loadingShoeId.value) return; // Prevent multiple clicks
 
   loadingShoeId.value = shoeId;
   try {
-    if (isFavorited(shoeId)) {
-      await shoppingStore.unlikeShoe(shoeId);
-    } else {
-      await shoppingStore.likeShoe(shoeId);
-    }
-  } catch (error) {
-    console.error("Failed to toggle favorite:", error);
+    await shoppingStore.unlikeShoe(shoeId);
+  } catch (err) {
+    console.error("Failed to unlike shoe:", err);
   } finally {
     loadingShoeId.value = null;
   }
@@ -284,40 +250,69 @@ const calculateDiscount = (prevPrice, currentPrice) => {
   if (!prevPrice || !currentPrice) return 0;
   return Math.round(((prevPrice - currentPrice) / prevPrice) * 100);
 };
-
-const goBack = () => {
-  router.push("/new-user-wizard");
-};
 </script>
 
 <style scoped>
 .page-wrapper {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
+  display: flex;
+  height: 100vh;
+  background: #2b2d31;
+  color: #ffffff;
+  overflow: hidden;
 }
 
 .trainers-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  padding-left: 340px; /* Make room for sidebar on the left */
-  height: 100vh;
-  background: #2b2d31;
+  flex: 1;
+  margin-left: 320px;
   display: flex;
   flex-direction: column;
+  height: 100vh;
   overflow: hidden;
+  padding: 2rem;
 }
 
 .trainers-title {
   font-size: 2rem;
-  font-weight: 400;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #ffffff;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4, #22c55e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   flex-shrink: 0;
 }
 
+.loading-state,
+.error-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading-state p,
+.error-state p {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.retry-button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  border: none;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
 
 .trainers-grid {
   display: grid;
@@ -465,6 +460,17 @@ const goBack = () => {
   justify-content: center;
 }
 
+.trainer-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.trainer-card:hover .trainer-image img {
+  transform: scale(1.05);
+}
+
 .carousel-controls {
   display: flex;
   align-items: center;
@@ -479,69 +485,70 @@ const goBack = () => {
 .carousel-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  color: #ffffff;
   width: 28px;
   height: 28px;
-  font-size: 20px;
-  line-height: 1;
-  color: #ffffff;
+  border-radius: 50%;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  font-weight: bold;
 }
 
 .carousel-btn:hover:not(:disabled) {
-  background: rgba(124, 58, 237, 0.3);
-  border-color: rgba(124, 58, 237, 0.5);
+  background: rgba(124, 58, 237, 0.5);
+  border-color: rgba(124, 58, 237, 0.8);
   transform: scale(1.1);
 }
 
 .carousel-btn:disabled {
-  opacity: 0.2;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .carousel-indicators {
   display: flex;
-  gap: 4px;
+  gap: 0.35rem;
   align-items: center;
 }
 
 .indicator-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.3);
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.indicator-dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.2);
 }
 
 .indicator-dot.active {
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
-  width: 8px;
-  height: 8px;
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
-}
-
-.trainer-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: 9px;
+  height: 9px;
 }
 
 .trainer-info {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .trainer-name {
+  margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  margin: 0 0 0.75rem 0;
   color: #ffffff;
   line-height: 1.3;
-  min-height: 2.4rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -551,17 +558,14 @@ const goBack = () => {
 
 .trainer-price {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-direction: column;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .price {
   font-size: 1.3rem;
-  font-weight: bold;
+  font-weight: 700;
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -602,95 +606,94 @@ const goBack = () => {
 }
 
 .store-link {
-  font-size: 0.75rem;
-  color: #06b6d4;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  border-radius: 0.5rem;
+  color: #ffffff;
   text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
   transition: all 0.3s ease;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  white-space: nowrap;
 }
 
 .store-link:hover {
-  color: #22c55e;
-  border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(124, 58, 237, 0.4);
+  border-color: rgba(124, 58, 237, 0.6);
+  transform: translateY(-2px);
 }
 
-.loading-state,
-.error-state,
 .empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 2rem;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
 }
 
-.loading-state p {
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.8);
+.empty-icon {
+  font-size: 5rem;
+  opacity: 0.3;
 }
 
-.error-state p {
-  font-size: 1.1rem;
-  color: #ff6b6b;
-  margin-bottom: 1rem;
-}
-
-.empty-state p {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.retry-button {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+.empty-title {
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #000000;
-  background: #22c55e;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.empty-text {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.search-button {
+  margin-top: 1rem;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
   border: none;
-  border-radius: 2rem;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.retry-button:hover {
-  background: #1ea34a;
-  transform: translateY(-1px);
+.search-button:hover {
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
 }
 
 .back-button {
-  display: block;
-  margin: 1.5rem auto 0;
-  padding: 1.25rem 2rem;
-  font-size: 1rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #ffffff;
   font-weight: 600;
-  color: #000000;
-  background: #ffffff;
-  border: none;
-  border-radius: 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .back-button:hover {
-  background: #f0f0f0;
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-4px);
 }
 
 @media (max-width: 768px) {
   .trainers-container {
+    margin-left: 0;
     padding: 1rem;
-    padding-left: 1rem;
   }
 
   .trainers-title {
@@ -702,26 +705,16 @@ const goBack = () => {
     gap: 1rem;
   }
 
-  .trainer-card {
-    font-size: 0.9rem;
-  }
-
   .trainer-image {
-    height: 200px;
+    height: 180px;
   }
 
   .trainer-name {
-    font-size: 0.9rem;
-    min-height: 2.4rem;
+    font-size: 0.85rem;
   }
 
   .price {
-    font-size: 1.2rem;
-  }
-
-  .store-link {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
+    font-size: 1.1rem;
   }
 }
 </style>

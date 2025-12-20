@@ -34,9 +34,8 @@ const shoes = {
   list: (searchId) =>
     axiosClient.get("/api/v1/shoes", { params: { search_id: searchId } }),
   liked: () => axiosClient.get("/api/v1/shoes/liked"),
-  like: (shoeId) => axiosClient.post("/api/v1/shoes/like", { shoe_id: shoeId }),
-  unlike: (shoeId) =>
-    axiosClient.post("/api/v1/shoes/dislike", { shoe_id: shoeId }),
+  like: (shoeId) => axiosClient.post(`/api/v1/shoes/${shoeId}/like`),
+  unlike: (shoeId) => axiosClient.post(`/api/v1/shoes/${shoeId}/dislike`),
 };
 
 const sizes = {

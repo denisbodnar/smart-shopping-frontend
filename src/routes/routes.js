@@ -5,6 +5,7 @@ import Hello from "../components/Hello.vue";
 import OAuthCallback from "../components/OAuthCallback.vue";
 import NewUserWizard from "@/components/NewUserWizard.vue";
 import ShoesCatalog from "@/components/ShoesCatalog.vue";
+import Favorites from "@/components/Favorites.vue";
 
 const routes = [
   {
@@ -40,6 +41,11 @@ const routes = [
     path: "/shoes",
     name: "Shoes",
     component: ShoesCatalog,
+  },
+  {
+    path: "/favorites",
+    name: "Favorites",
+    component: Favorites,
   },
 ];
 

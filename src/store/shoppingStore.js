@@ -38,7 +38,7 @@ export const useShoppingStore = defineStore("shopping", () => {
   const categories = ref([]);
   const colors = ref([]);
   const searchResults = ref([]);
-  const searchId = ref(null);
+  const searchId = ref(localStorage.getItem("searchId") || null);
   const shoes = ref([]);
   const likedShoes = ref([]);
   const sizes = ref([]);
@@ -184,6 +184,7 @@ export const useShoppingStore = defineStore("shopping", () => {
       // Store search_id if it exists in the response
       if (data && data.search_id) {
         searchId.value = data.search_id;
+        localStorage.setItem("searchId", data.search_id);
         console.log("Stored search_id:", searchId.value);
       } else {
         console.log("No search_id in response");
@@ -218,7 +219,7 @@ export const useShoppingStore = defineStore("shopping", () => {
     setError("shoes", null);
     try {
       console.log("Fetching shoes with search_id:", searchId);
-      const { data } = await api.shoes.list("35");
+      const { data } = await api.shoes.list(searchId);
       console.log("Shoes API response:", data);
       shoes.value = Array.isArray(data) ? data : [];
       return shoes.value;
@@ -318,6 +319,8 @@ export const useShoppingStore = defineStore("shopping", () => {
   function signOut() {
     setToken(null);
     currentUser.value = null;
+    searchId.value = null;
+    localStorage.removeItem("searchId");
   }
 
   return {
