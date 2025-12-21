@@ -177,7 +177,7 @@
           <select id="size" v-model="editForm.size_id">
             <option :value="null">Оберіть розмір</option>
             <option v-for="size in sizes" :key="size.id" :value="size.id">
-              {{ size.name }}
+              {{ size.name || size.us_size }}
             </option>
           </select>
         </div>
@@ -191,9 +191,65 @@
               :key="audience.id"
               :value="audience.id"
             >
-              {{ audience.name }}
+              {{ audience.display_name || audience.name }}
             </option>
           </select>
+        </div>
+
+        <!-- User Photos Section -->
+        <div class="form-group photos-section">
+          <label>Мої фото для примірки</label>
+
+          <!-- Loading Photos -->
+          <div v-if="loadingPhotos" class="loading-photos">
+            <div class="spinner-small"></div>
+            <p>Завантаження фото...</p>
+          </div>
+
+          <!-- Photos Grid -->
+          <div v-else-if="userPhotos.length > 0" class="photos-grid">
+            <div v-for="photo in userPhotos" :key="photo.id" class="photo-item">
+              <img
+                :src="photo.url"
+                :alt="`Photo ${photo.id}`"
+                class="photo-thumbnail"
+              />
+              <button
+                type="button"
+                @click="deleteUserPhoto(photo.id)"
+                class="photo-delete-btn"
+                title="Видалити фото"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="empty-photos">
+            <p>Немає завантажених фото</p>
+          </div>
+
+          <!-- Upload Button -->
+          <button
+            type="button"
+            @click="triggerPhotoUpload"
+            class="upload-photo-btn"
+            :disabled="uploadingPhoto"
+          >
+            {{ uploadingPhoto ? "📤 Завантаження..." : "📷 Додати фото" }}
+          </button>
+          <input
+            ref="photoFileInput"
+            type="file"
+            accept="image/*"
+            @change="handlePhotoUpload"
+            style="display: none"
+          />
+
+          <p v-if="photoUploadError" class="photo-error">
+            {{ photoUploadError }}
+          </p>
         </div>
 
         <div v-if="error.user" class="error-message">{{ error.user }}</div>
@@ -220,6 +276,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useShoppingStore } from "../store/shoppingStore";
 import { useRouter } from "vue-router";
+import api from "../api/api";
 
 const shoppingStore = useShoppingStore();
 const router = useRouter();
@@ -302,6 +359,13 @@ const showEditModal = ref(false);
 const sizes = computed(() => shoppingStore.sizes);
 const targetAudiences = computed(() => shoppingStore.targetAudiences);
 
+// User Photos State
+const userPhotos = ref([]);
+const loadingPhotos = ref(false);
+const uploadingPhoto = ref(false);
+const photoFileInput = ref(null);
+const photoUploadError = ref(null);
+
 const editForm = ref({
   first_name: "",
   last_name: "",
@@ -332,17 +396,98 @@ const openEditModal = async () => {
     editForm.value = {
       first_name: currentUser.value.first_name || "",
       last_name: currentUser.value.last_name || "",
-      size_id: currentUser.value.size_id || null,
-      target_audience_id: currentUser.value.target_audience_id || null,
+      size_id: currentUser.value.size?.id || null,
+      target_audience_id: currentUser.value.target_audience?.id || null,
     };
   }
 
+  // Fetch user photos
+  await fetchUserPhotos();
+
   showEditModal.value = true;
+};
+
+const fetchUserPhotos = async () => {
+  loadingPhotos.value = true;
+  photoUploadError.value = null;
+  try {
+    const response = await api.userPhotos.list();
+    userPhotos.value = Array.isArray(response.data) ? response.data : [];
+  } catch (err) {
+    console.error("Failed to load user photos:", err);
+    userPhotos.value = [];
+  } finally {
+    loadingPhotos.value = false;
+  }
+};
+
+const triggerPhotoUpload = () => {
+  photoFileInput.value?.click();
+};
+
+const handlePhotoUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith("image/")) {
+    photoUploadError.value = "Будь ласка, виберіть файл зображення";
+    return;
+  }
+
+  // Validate file size (max 10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    photoUploadError.value = "Розмір файлу не повинен перевищувати 10MB";
+    return;
+  }
+
+  photoUploadError.value = null;
+  uploadingPhoto.value = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    await api.userPhotos.upload(formData);
+
+    // Refresh the photo list
+    await fetchUserPhotos();
+
+    // Clear the file input
+    if (photoFileInput.value) {
+      photoFileInput.value.value = "";
+    }
+  } catch (err) {
+    console.error("Photo upload error:", err);
+    photoUploadError.value =
+      err.response?.data?.errors?.[0] ||
+      err.response?.data?.message ||
+      "Помилка при завантаженні фото";
+  } finally {
+    uploadingPhoto.value = false;
+  }
+};
+
+const deleteUserPhoto = async (photoId) => {
+  if (!confirm("Ви впевнені, що хочете видалити це фото?")) return;
+
+  try {
+    await api.userPhotos.delete(photoId);
+    await fetchUserPhotos();
+  } catch (err) {
+    console.error("Failed to delete photo:", err);
+    photoUploadError.value =
+      err.response?.data?.errors?.[0] ||
+      err.response?.data?.message ||
+      "Помилка при видаленні фото";
+  }
 };
 
 const closeEditModal = () => {
   showEditModal.value = false;
   shoppingStore.error.user = null;
+  userPhotos.value = [];
+  photoUploadError.value = null;
 };
 
 const handleUpdateUser = async () => {
@@ -507,6 +652,33 @@ const handleUpdateUser = async () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.user-preferences {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preference-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.preference-icon {
+  font-size: 0.85rem;
+}
+
+.preference-value {
+  font-weight: 500;
 }
 
 .settings-btn {
@@ -1041,6 +1213,163 @@ const handleUpdateUser = async () => {
   .btn-cancel,
   .btn-save {
     width: 100%;
+  }
+}
+
+/* Photos Section Styles */
+.photos-section {
+  margin-top: 1.5rem;
+}
+
+.loading-photos {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0.5rem;
+}
+
+.loading-photos p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.photo-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.photo-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  padding: 0;
+  opacity: 0;
+}
+
+.photo-item:hover .photo-delete-btn {
+  opacity: 1;
+}
+
+.photo-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: scale(1.1);
+}
+
+.empty-photos {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0.5rem;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.upload-photo-btn {
+  width: 100%;
+  padding: 0.875rem;
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.15),
+    rgba(6, 182, 212, 0.15)
+  );
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.upload-photo-btn:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.25),
+    rgba(6, 182, 212, 0.25)
+  );
+  border-color: rgba(124, 58, 237, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.upload-photo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.photo-error {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.5rem;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

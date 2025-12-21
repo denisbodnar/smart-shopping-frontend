@@ -54,11 +54,13 @@ const user = {
 
 const userPhotos = {
   list: () => axiosClient.get("/api/v1/user_photos"),
-  create: (formData) =>
+  upload: (formData) =>
     axiosClient.post("/api/v1/user_photos", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     }),
-  delete: (userPhotoId) => axiosClient.delete(`/api/v1/user_photos/${userPhotoId}`),
+  delete: (id) => axiosClient.delete(`/api/v1/user_photos/${id}`),
   tryOnShoe: (userPhotoId, payload) =>
     axiosClient.post(`/api/v1/user_photos/${userPhotoId}/try_on_shoe`, payload),
 };
