@@ -4,7 +4,7 @@
       Смарт-шопінг. Твій персональний асистент
     </p>
     <form class="login-form" @submit.prevent="onSubmit">
-      <!-- <label class="login-label">
+      <label class="login-label">
         <span>Email</span>
         <input
           v-model="email"
@@ -79,26 +79,31 @@
         </div>
       </label>
 
-      <button type="submit" class="login-button" :disabled="!isFormValid">
-        Продовжити
-      </button> -->
+      <button
+        type="submit"
+        class="login-button"
+        :disabled="!isFormValid || isSubmitting"
+      >
+        {{ isSubmitting ? "Завантаження..." : "Продовжити" }}
+      </button>
 
       <button type="button" class="google-login-button" @click="onGoogleLogin">
         Увійти з Google
       </button>
 
-      <!-- <p class="login-link">
+      <p class="login-link">
         Немає облікового запису?
         <router-link to="/sign-up" class="login-link-text"
           >Зареєструватися</router-link
         >
-      </p> -->
+      </p>
     </form>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
 import { useShoppingStore } from "../store/shoppingStore";
 
@@ -115,16 +120,35 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
-const onSubmit = () => {
+const router = useRouter();
+const shoppingStore = useShoppingStore();
+
+const isSubmitting = computed(() => shoppingStore.loading.auth);
+
+const onSubmit = async () => {
   if (!isValidEmail(email.value)) {
     toast.error("Невірний формат електронної пошти!");
     return;
   }
 
-  toast.success("Вхід успішний!");
-};
+  try {
+    const data = await shoppingStore.signIn({
+      email: email.value,
+      password: password.value,
+    });
 
-const shoppingStore = useShoppingStore();
+    if (data?.token) {
+      shoppingStore.setToken(data.token);
+    }
+
+    toast.success("Вхід успішний!");
+
+    const hasSearchId = !!(localStorage.getItem("searchId") || shoppingStore.searchId);
+    router.push(hasSearchId ? "/shoes" : "/new-user-wizard");
+  } catch (e) {
+    toast.error(shoppingStore.error.auth || "Не вдалося увійти");
+  }
+};
 
 const onGoogleLogin = () => {
   try {

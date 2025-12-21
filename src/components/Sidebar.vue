@@ -128,6 +128,12 @@
           <p>Ще немає улюблених</p>
         </div>
       </div>
+
+      <div class="sidebar-section logout-section">
+        <button type="button" class="logout-btn" @click="handleLogout">
+          Вийти
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -171,7 +177,7 @@
           <select id="size" v-model="editForm.size_id">
             <option :value="null">Оберіть розмір</option>
             <option v-for="size in sizes" :key="size.id" :value="size.id">
-              {{ size.us_size }}
+              {{ size.name }}
             </option>
           </select>
         </div>
@@ -243,6 +249,12 @@ const goToShopPage = (shoeUrl) => {
   if (shoeUrl) {
     window.open(shoeUrl, "_blank");
   }
+};
+
+const handleLogout = () => {
+  shoppingStore.signOut();
+  isMobileHidden.value = true;
+  router.push("/sign-in");
 };
 
 onMounted(async () => {
@@ -392,6 +404,34 @@ const handleUpdateUser = async () => {
   border-radius: 1rem;
   padding: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-section {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
 }
 
 .section-title {
