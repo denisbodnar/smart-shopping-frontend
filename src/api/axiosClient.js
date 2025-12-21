@@ -10,6 +10,14 @@ const axiosClient = axios.create({
   withCredentials: false,
 });
 
+let isRedirectingToSignIn = false;
+
+function clearAuthTokens() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('google_id_token');
+}
+
 // Helper to read the Google auth token (ID token or access token)
 // Adjust this function to match how/where you actually store the token.
 function getGoogleAuthToken() {
@@ -50,6 +58,16 @@ axiosClient.interceptors.response.use(
     // Example: if backend returns 401, you might want to clear token / redirect to login
     if (error.response && error.response.status === 401) {
       // TODO: handle unauthorized globally (e.g., logout, redirect, show message)
+      clearAuthTokens();
+
+      if (!isRedirectingToSignIn) {
+        isRedirectingToSignIn = true;
+
+        const currentPath = window.location?.pathname;
+        if (currentPath !== '/sign-in') {
+          window.location.assign('/sign-in');
+        }
+      }
     }
 
     return Promise.reject(error);

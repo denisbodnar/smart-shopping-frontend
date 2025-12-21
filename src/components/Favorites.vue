@@ -459,9 +459,14 @@ const handleTryOn = async () => {
     }
   } catch (err) {
     console.error("Try-on error:", err);
-    uploadError.value =
-      err.response?.data?.message ||
-      "Помилка при обробці зображення. Спробуйте ще раз.";
+    const isTimeout =
+      err?.code === "ECONNABORTED" ||
+      String(err?.message || "").toLowerCase().includes("timeout");
+
+    uploadError.value = isTimeout
+      ? "Обробка займає більше часу ніж очікувалося. Будь ласка, спробуйте ще раз."
+      : err.response?.data?.message ||
+        "Помилка при обробці зображення. Спробуйте ще раз.";
   } finally {
     processingTryOn.value = false;
   }
@@ -1248,6 +1253,8 @@ const calculateDiscount = (prevPrice, currentPrice) => {
 }
 
 .back-to-gallery-btn {
+  width: 100%;
+  max-width: 420px;
   padding: 0.5rem 1rem;
   background: rgba(124, 58, 237, 0.2);
   border: 1px solid rgba(124, 58, 237, 0.4);
@@ -1290,18 +1297,24 @@ const calculateDiscount = (prevPrice, currentPrice) => {
 }
 
 .photo-preview {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 .preview-image-wrapper {
   position: relative;
-  display: inline-block;
-  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 420px;
 }
 
 .preview-image {
-  max-width: 100%;
-  max-height: 400px;
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
   border-radius: 0.75rem;
   border: 2px solid rgba(124, 58, 237, 0.3);
   display: block;
