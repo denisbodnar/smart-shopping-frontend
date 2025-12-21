@@ -62,7 +62,9 @@ const userPhotos = {
     }),
   delete: (id) => axiosClient.delete(`/api/v1/user_photos/${id}`),
   tryOnShoe: (userPhotoId, payload) =>
-    axiosClient.post(`/api/v1/user_photos/${userPhotoId}/try_on_shoe`, payload),
+    axiosClient.post(`/api/v1/user_photos/${userPhotoId}/try_on_shoe`, payload, {
+      timeout: 60000,
+    }),
 };
 
 export const api = {

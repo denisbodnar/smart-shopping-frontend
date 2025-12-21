@@ -70,6 +70,9 @@
             </svg>
           </button>
         </div>
+        <button v-if="currentUser" type="button" class="wizard-btn" @click="goToWizard">
+          Почати новий пошук
+        </button>
         <div v-else class="error-text">Не вдалось завантажити профіль</div>
       </div>
 
@@ -94,6 +97,10 @@
           <span class="icon">❤️</span>
           Улюблені
         </h3>
+
+        <button type="button" class="favorites-page-btn" @click="goToFavorites">
+          Перейти до улюблених
+        </button>
 
         <div v-if="loading.likedShoes" class="loading-container">
           <div class="spinner-small"></div>
@@ -300,6 +307,12 @@ const toggleMobileSidebar = () => {
 
 const goToFavorites = () => {
   router.push("/favorites");
+  isMobileHidden.value = true;
+};
+
+const goToWizard = () => {
+  router.push("/new-user-wizard");
+  isMobileHidden.value = true;
 };
 
 const goToShopPage = (shoeUrl) => {
@@ -716,6 +729,30 @@ const handleUpdateUser = async () => {
   transform: scale(0.95);
 }
 
+.wizard-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wizard-btn:hover {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.35);
+  transform: translateY(-1px);
+}
+
+.wizard-btn:active {
+  transform: translateY(0);
+}
+
 /* Search Section */
 .search-info {
   display: flex;
@@ -857,6 +894,30 @@ const handleUpdateUser = async () => {
 }
 
 .view-all-btn:active {
+  transform: translateY(0);
+}
+
+.favorites-page-btn {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.favorites-page-btn:hover {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.35);
+  transform: translateY(-1px);
+}
+
+.favorites-page-btn:active {
   transform: translateY(0);
 }
 
