@@ -51,6 +51,19 @@ const user = {
   update: (payload) => axiosClient.patch("/api/v1/user", payload),
 };
 
+const userPhotos = {
+  list: () => axiosClient.get("/api/v1/user_photos"),
+  upload: (formData) =>
+    axiosClient.post("/api/v1/user_photos", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+  delete: (id) => axiosClient.delete(`/api/v1/user_photos/${id}`),
+  tryOnShoe: (userPhotoId, payload) =>
+    axiosClient.post(`/api/v1/user_photos/${userPhotoId}/try_on_shoe`, payload),
+};
+
 export const api = {
   auth,
   brands,
@@ -61,6 +74,7 @@ export const api = {
   sizes,
   targetAudiences,
   user,
+  userPhotos,
 };
 
 export default api;
