@@ -27,6 +27,7 @@ const colors = {
 };
 
 const searches = {
+  list: () => axiosClient.get("/api/v1/searches"),
   create: (payload) => axiosClient.post("/api/v1/searches", payload),
 };
 

@@ -152,8 +152,12 @@
         </div>
       </label>
 
-      <button type="submit" class="register-button" :disabled="!isFormValid">
-        Зареєструватися
+      <button
+        type="submit"
+        class="register-button"
+        :disabled="!isFormValid || isSubmitting"
+      >
+        {{ isSubmitting ? "Завантаження..." : "Зареєструватися" }}
       </button>
 
       <p class="register-link">
@@ -168,7 +172,9 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { toast } from "vue3-toastify";
+import { useShoppingStore } from "../store/shoppingStore";
 
 const name = ref("");
 const email = ref("");
@@ -191,7 +197,12 @@ const isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
-const onSubmit = () => {
+const router = useRouter();
+const shoppingStore = useShoppingStore();
+
+const isSubmitting = computed(() => shoppingStore.loading.auth);
+
+const onSubmit = async () => {
   if (!isValidEmail(email.value)) {
     toast.error("Невірний формат електронної пошти!");
     return;
@@ -203,7 +214,23 @@ const onSubmit = () => {
     return;
   }
 
-  toast.success("Реєстрація успішна!");
+  const parts = name.value.trim().split(/\s+/).filter(Boolean);
+  const firstName = parts[0] || "";
+  const lastName = parts.slice(1).join(" ") || "";
+
+  try {
+    await shoppingStore.signUp({
+      email: email.value,
+      password: password.value,
+      first_name: firstName,
+      last_name: lastName,
+    });
+
+    toast.success("Реєстрація успішна!");
+    router.push("/sign-in");
+  } catch (e) {
+    toast.error(shoppingStore.error.auth || "Не вдалося зареєструватися");
+  }
 };
 </script>
 

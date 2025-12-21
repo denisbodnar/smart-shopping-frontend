@@ -14,6 +14,7 @@ export const useShoppingStore = defineStore("shopping", () => {
     sizes: false,
     targetAudiences: false,
     user: false,
+    userPhotos: false,
   });
 
   const error = reactive({
@@ -27,6 +28,7 @@ export const useShoppingStore = defineStore("shopping", () => {
     sizes: null,
     targetAudiences: null,
     user: null,
+    userPhotos: null,
   });
 
   const token = ref(
@@ -43,6 +45,8 @@ export const useShoppingStore = defineStore("shopping", () => {
   const likedShoes = ref([]);
   const sizes = ref([]);
   const targetAudiences = ref([]);
+
+  const userPhotos = ref([]);
 
   function setLoading(key, value) {
     loading[key] = value;
@@ -179,14 +183,14 @@ export const useShoppingStore = defineStore("shopping", () => {
     try {
       const { data } = await api.searches.create(payload);
       console.log("API Response data:", data);
-      searchResults.value = Array.isArray(data) ? data : [];
 
-      // Store search_id if it exists in the response
-      if (data && data.search_id) {
+      if (data?.search_id) {
         searchId.value = data.search_id;
-        localStorage.setItem("searchId", data.search_id);
+        localStorage.setItem("searchId", String(data.search_id));
         console.log("Stored search_id:", searchId.value);
       } else {
+        searchId.value = null;
+        localStorage.removeItem("searchId");
         console.log("No search_id in response");
       }
 
@@ -316,6 +320,69 @@ export const useShoppingStore = defineStore("shopping", () => {
     }
   }
 
+  async function fetchUserPhotos() {
+    setLoading("userPhotos", true);
+    setError("userPhotos", null);
+    try {
+      const { data } = await api.userPhotos.list();
+      userPhotos.value = Array.isArray(data) ? data : [];
+      return userPhotos.value;
+    } catch (err) {
+      setError("userPhotos", extractErrorMessage(err));
+      throw err;
+    } finally {
+      setLoading("userPhotos", false);
+    }
+  }
+
+  async function uploadUserPhoto(formData) {
+    setLoading("userPhotos", true);
+    setError("userPhotos", null);
+    try {
+      const { data } = await api.userPhotos.create(formData);
+      await fetchUserPhotos();
+      return data;
+    } catch (err) {
+      setError("userPhotos", extractErrorMessage(err));
+      throw err;
+    } finally {
+      setLoading("userPhotos", false);
+    }
+  }
+
+  async function deleteUserPhoto(userPhotoId) {
+    setLoading("userPhotos", true);
+    setError("userPhotos", null);
+    try {
+      await api.userPhotos.delete(userPhotoId);
+      userPhotos.value = userPhotos.value.filter((p) => p.id !== userPhotoId);
+      return true;
+    } catch (err) {
+      setError("userPhotos", extractErrorMessage(err));
+      throw err;
+    } finally {
+      setLoading("userPhotos", false);
+    }
+  }
+
+  async function tryOnShoe(userPhotoId, shoeId) {
+    setLoading("userPhotos", true);
+    setError("userPhotos", null);
+    try {
+      const { data } = await api.userPhotos.tryOnShoe(userPhotoId, {
+        shoe_id: Number(shoeId),
+      });
+
+      await fetchUserPhotos();
+      return data;
+    } catch (err) {
+      setError("userPhotos", extractErrorMessage(err));
+      throw err;
+    } finally {
+      setLoading("userPhotos", false);
+    }
+  }
+
   function signOut() {
     setToken(null);
     currentUser.value = null;
@@ -337,6 +404,7 @@ export const useShoppingStore = defineStore("shopping", () => {
     likedShoes,
     sizes,
     targetAudiences,
+    userPhotos,
     setToken,
     signUp,
     signIn,
@@ -354,6 +422,10 @@ export const useShoppingStore = defineStore("shopping", () => {
     fetchTargetAudiences,
     fetchCurrentUser,
     updateCurrentUser,
+    fetchUserPhotos,
+    uploadUserPhoto,
+    deleteUserPhoto,
+    tryOnShoe,
     signOut,
   };
 });

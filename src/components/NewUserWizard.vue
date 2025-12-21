@@ -38,49 +38,37 @@
         </option>
       </select>
 
-      <select
-        v-else-if="step === 3"
-        v-model="sizeIds"
-        class="login-input"
-        :disabled="isLoading"
-        multiple
-        required
-      >
-        <option v-for="s in sizes" :key="s.id" :value="String(s.id)">
-          {{ s.name }}
-        </option>
-      </select>
+      <template v-else-if="step === 3">
+        <MultiSelectDropdown
+          v-model="sizeIds"
+          :options="sizes"
+          placeholder="Оберіть розмір"
+          :disabled="isLoading"
+        />
+      </template>
 
-      <select
-        v-else-if="step === 4"
-        v-model="brandIds"
-        class="login-input"
-        :disabled="isLoading"
-        multiple
-        required
-      >
-        <option v-for="b in brands" :key="b.id" :value="String(b.id)">
-          {{ b.name }}
-        </option>
-      </select>
+      <template v-else-if="step === 4">
+        <MultiSelectDropdown
+          v-model="brandIds"
+          :options="brands"
+          placeholder="Оберіть бренд"
+          :disabled="isLoading"
+        />
+      </template>
 
-      <select
-        v-else-if="step === 5"
-        v-model="colorIds"
-        class="login-input"
-        :disabled="isLoading"
-        multiple
-        required
-      >
-        <option v-for="c in colors" :key="c.id" :value="String(c.id)">
-          {{ c.name }}
-        </option>
-      </select>
+      <template v-else-if="step === 5">
+        <MultiSelectDropdown
+          v-model="colorIds"
+          :options="colors"
+          placeholder="Оберіть колір"
+          :disabled="isLoading"
+        />
+      </template>
 
-      <div v-else>
+      <div v-else class="price-range">
         <input
           v-model="priceMin"
-          class="login-input"
+          class="login-input price-input"
           type="number"
           inputmode="numeric"
           placeholder="Мінімум"
@@ -90,7 +78,7 @@
         />
         <input
           v-model="priceMax"
-          class="login-input"
+          class="login-input price-input"
           type="number"
           inputmode="numeric"
           placeholder="Максимум"
@@ -126,6 +114,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useShoppingStore } from "../store/shoppingStore";
+import MultiSelectDropdown from "./MultiSelectDropdown.vue";
 
 const emit = defineEmits(["complete"]);
 
@@ -247,3 +236,33 @@ const onNext = async () => {
   }
 };
 </script>
+
+<style scoped>
+.price-range {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.price-input {
+  padding-right: 1.65rem;
+}
+
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.price-input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+@media (max-width: 520px) {
+  .price-range {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
